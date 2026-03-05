@@ -247,20 +247,6 @@ Prof_AI/
 
 ---
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Backend** | Python 3.10+, FastAPI, Uvicorn |
-| **Vector Database** | ChromaDB (local, persistent) |
-| **Embeddings** | sentence-transformers (`all-MiniLM-L6-v2`, runs locally) |
-| **LLM** | Cisco CX AI Playground (`gpt-4o-mini` via OpenAI SDK) |
-| **Frontend** | HTML, CSS, JavaScript (no framework) |
-| **Templating** | Jinja2 |
-| **Configuration** | pydantic-settings, python-dotenv |
-
----
-
 ## Environment Variables
 
 | Variable | Description | Default |
