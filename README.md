@@ -1,47 +1,67 @@
-# BEMS Troubleshooting Assistant
+# Prof-AI for BEMS
 
-An AI-powered support tool that helps TAC and on-call engineers diagnose and resolve Building Energy Management System (BEMS) issues faster using Retrieval-Augmented Generation (RAG).
+**Prof-AI for BEMS** is an AI-powered troubleshooting assistant built for TAC and on-call engineers working with Building Energy Management Systems (BEMS). It uses a **Retrieval-Augmented Generation (RAG)** architecture to combine fast semantic search over historical support data with LLM-driven diagnostic summaries, helping engineers resolve issues faster and reduce mean time to resolution.
 
-## Architecture
+## How It Works
+
+Engineers describe a BEMS problem in plain language. The system searches a vector database of past tickets, service requests, and Webex conversations to find semantically similar issues. It then feeds those matches to an LLM, which generates a structured troubleshooting summary with root-cause analysis, diagnostic steps, and proven fixes drawn from historical data.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Web UI (Browser)                         │
-│  ┌──────────┐  ┌──────────────┐  ┌───────────────────────┐ │
-│  │ Diagnose │  │Search Tickets│  │    Ingest Data        │ │
-│  └────┬─────┘  └──────┬───────┘  └───────────┬───────────┘ │
-└───────┼────────────────┼──────────────────────┼─────────────┘
-        │                │                      │
-        ▼                ▼                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  FastAPI Backend (app.py)                    │
-│  POST /api/query    GET /api/search    POST /api/ingest     │
-└────────┬────────────────┬──────────────────────┬────────────┘
-         │                │                      │
-         ▼                ▼                      ▼
-┌──────────────────────────────────────┐  ┌───────────────────┐
-│       RAG Engine (rag_engine.py)     │  │ Ingest (ingest.py)│
-│  ┌────────────┐ ┌──────────────────┐ │  │ Load JSON → Embed │
-│  │  Retrieve   │ │    Summarize     │ │  │ → Store in Chroma │
-│  │ (ChromaDB)  │ │ (Cisco CX AI)   │ │  └───────────────────┘
-│  └──────┬──────┘ └──────┬──────────┘ │
-└─────────┼───────────────┼────────────┘
-          ▼               ▼
-┌─────────────────┐ ┌──────────────────────┐
-│ ChromaDB Vector │ │ Cisco CX AI          │
-│    Database     │ │ Playground           │
-│                 │ │ (gpt-4o-mini)        │
-└─────────────────┘ └──────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         Prof-AI Web UI (Browser)                            │
+│ ┌──────────┐ ┌──────────┐ ┌────────┐ ┌────────┐ ┌──────┐ ┌──────┐ ┌─────┐│
+│ │ Diagnose │ │ Search   │ │ Ingest │ │ Ticket │ │ RCA  │ │ Jira │ │Fine ││
+│ │  Issue   │ │ Tickets  │ │  Data  │ │  Sync  │ │      │ │Ticket│ │Tune ││
+│ └────┬─────┘ └────┬─────┘ └───┬────┘ └───┬────┘ └──┬───┘ └──┬───┘ └──┬──┘│
+└──────┼────────────┼───────────┼──────────┼─────────┼────────┼────────┼───┘
+       │            │           │          │         │        │        │
+       ▼            ▼           ▼          ▼         ▼        ▼        ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         FastAPI Backend (app.py)                             │
+│  /api/query  /api/search  /api/ingest  /api/sync/*  /api/rca  /api/jira-*  │
+└───────┬──────────┬──────────┬──────────┬───────────┬──────────┬─────────────┘
+        │          │          │          │           │          │
+        ▼          ▼          ▼          ▼           ▼          ▼
+┌──────────────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────────┐
+│     RAG Engine       │ │  Ingest  │ │  Ticket  │ │ Cisco CX AI          │
+│ 1. Embed query       │ │(ingest.py│ │   Sync   │ │ Playground (LLM)     │
+│ 2. Retrieve ChromaDB │ │)         │ │(sync_    │ │ (remote API)         │
+│ 3. Summarize via LLM │ └──────────┘ │tickets.py│ └──────────────────────┘
+└─────────┬────────────┘              └──────────┘
+          ▼
+┌─────────────────┐
+│ ChromaDB Vector │
+│    Database     │
+│  (local disk)   │
+└─────────────────┘
 ```
 
 ## Features
 
-- **Semantic Search**: Find similar past tickets using vector similarity (sentence-transformers)
-- **AI Summarization**: LLM-generated troubleshooting guidance via Cisco CX AI Playground
-- **Multi-Source Data**: Supports BEMS tickets, Service Requests, and Webex conversations
-- **45 Sample Tickets**: Rich dataset covering HVAC, chillers, boilers, BACnet, VRF, IAQ, and more
-- **Modern Web UI**: Dark-themed, responsive interface with three modes
-- **REST API**: Full API for programmatic integration
+### Core RAG Pipeline
+- **Diagnose Issue** — Describe a problem in natural language, retrieve the most relevant past tickets via vector similarity, and receive an LLM-generated troubleshooting summary with root-cause rankings, diagnostic steps, and recommended fixes.
+- **Search Tickets** — Fast semantic search across the knowledge base without LLM analysis. Returns ranked results by cosine similarity.
+- **Resolution Playbook** — Click any retrieved ticket to view its structured resolution details in the sidebar: step-by-step procedures, reference documents, and CLI commands used during the original fix.
+
+### Knowledge Base Management
+- **Data Ingestion** — Bulk-load tickets from JSON into ChromaDB. Embeddings are generated locally using `all-MiniLM-L6-v2` (no external API needed).
+- **Real-Time Ticket Sync** — Add new tickets on the fly via JSON upload, CSV import, or webhook. Duplicates are automatically detected and skipped. All synced tickets are immediately searchable.
+
+### Root Cause Analysis
+- **Root Cause Analyser** — LLM-powered deep root-cause analysis that retrieves historical tickets, identifies failure patterns and contributing factors, assesses impact, and recommends prioritised corrective actions (immediate, short-term, long-term).
+- **Pattern Statistics** — Automated detection of recurring components, severity distribution, and data sources across similar historical incidents.
+- **Email Template** — Auto-generated professional RCA email template ready to copy and send to stakeholders.
+
+### Jira Ticket Generation
+- **Raise Jira Ticket** — LLM-based severity classification (P1-Critical through P4-Low) that analyses issue sentiment and impact, then generates a complete structured Jira ticket with summary, description, component, labels, and acceptance criteria.
+- **Copy-Ready Output** — Generated tickets are formatted for direct copy-paste into Jira with all required fields populated.
+- **RCA Integration** — Optionally feed RCA report context into the Jira generator for more accurate severity classification.
+
+### Embedding Fine-Tuning
+- **Fine-Tune Model** — Fine-tune the sentence-transformer embedding model on BEMS ticket data using contrastive learning (CosineSimilarityLoss). Generates positive pairs (description-resolution from the same ticket) and negative pairs (cross-component mismatches) to produce better domain-specific embeddings.
+
+### Additional
+- **45 Sample Tickets** — Pre-built dataset covering HVAC (VAV, AHU, FCU), chillers, boilers, cooling towers, BACnet/Modbus, VRF systems, IAQ sensors, lighting controls, fire/smoke dampers, and more. Each ticket includes resolution steps, reference documents, and commands used.
 
 ## Quick Start
 
@@ -63,13 +83,13 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edit `.env` and add your Cisco CX AI Playground JWT token:
+Edit `.env` and set your Cisco CX AI Playground JWT token:
 
 ```
 CXAI_PLAYGROUND_ACCESS_TOKEN=your-jwt-token-here
 ```
 
-The application uses the Cisco CX AI Playground API (`https://cxai-playground.cisco.com`) via the OpenAI SDK. The base URL is pre-configured in `.env.example` — you only need to provide your JWT token.
+This token is required for LLM-based features (Diagnose Issue, Root Cause Analyser, Jira Ticket Generator). Semantic search, data ingestion, ticket sync, and fine-tuning work without it.
 
 ### 3. Ingest Sample Data
 
@@ -77,42 +97,36 @@ The application uses the Cisco CX AI Playground API (`https://cxai-playground.ci
 python ingest.py
 ```
 
-This loads 45 sample BEMS tickets into ChromaDB and generates embeddings locally using `all-MiniLM-L6-v2` (no API key needed for embeddings).
+Loads 45 sample BEMS tickets into ChromaDB and generates embeddings locally using `all-MiniLM-L6-v2`. No external API call is needed for this step.
 
-### 4. Run the Application
+### 4. Run
 
 ```bash
 python app.py
 ```
 
-Open http://localhost:8000 in your browser.
+Open **http://localhost:8000** in your browser.
 
-## Usage
+## Usage Guide
 
-### Diagnose Issue (Full RAG Pipeline)
-1. Click **Diagnose Issue** in the sidebar
-2. Describe the BEMS problem in detail
-3. Click **Analyze & Diagnose**
-4. Review the AI-generated troubleshooting summary and matched tickets
-
-### Search Tickets (Semantic Search Only)
-1. Click **Search Tickets**
-2. Enter keywords or a short description
-3. Browse matching tickets (click to expand details)
-
-### Ingest Data
-1. Click **Ingest Data**
-2. Optionally specify a custom JSON file path
-3. Click **Start Ingestion**
+| Tab | What It Does |
+|-----|-------------|
+| **Diagnose Issue** | Full RAG pipeline — enter a problem description, get matched tickets + AI-generated troubleshooting summary. Click any ticket card to open the Resolution Playbook in the sidebar. |
+| **Search Tickets** | Semantic search only — enter keywords or a description, browse ranked results. Click a ticket to see its playbook. |
+| **Ingest Data** | Load a JSON file of tickets into ChromaDB (or re-ingest the default sample data). |
+| **Ticket Sync** | Paste JSON or CSV ticket data to add new entries to the knowledge base in real time. View sync history at the bottom. |
+| **Root Cause Analyser** | Enter a symptom to run LLM-powered RCA. View pattern statistics, the full RCA report, a copy-ready email template, and evidence tickets. |
+| **Raise Jira Ticket** | Describe an issue to get AI-classified severity and a complete Jira ticket. Optionally paste RCA context for better classification. Copy-ready output included. |
+| **Fine-Tune Model** | Train the embedding model on BEMS data to improve retrieval accuracy. Configure epochs and batch size. |
 
 ## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CXAI_PLAYGROUND_ACCESS_TOKEN` | Cisco CX AI Playground JWT token (required) | — |
+| `CXAI_PLAYGROUND_ACCESS_TOKEN` | Cisco CX AI Playground JWT token | — (required for LLM) |
 | `OPENAI_BASE_URL` | LLM API base URL | `https://cxai-playground.cisco.com` |
-| `EMBEDDING_MODEL` | Local sentence-transformer model | `all-MiniLM-L6-v2` |
-| `LLM_MODEL` | LLM model for summarization | `gpt-4o-mini` |
+| `EMBEDDING_MODEL` | Sentence-transformer model for embeddings | `all-MiniLM-L6-v2` |
+| `LLM_MODEL` | LLM model name for summarization | `gpt-4o-mini` |
 | `CHROMA_PERSIST_DIR` | ChromaDB storage directory | `./chroma_db` |
 | `CHROMA_COLLECTION` | ChromaDB collection name | `bems_tickets` |
 | `TOP_K` | Default number of results to retrieve | `5` |
@@ -124,104 +138,95 @@ Open http://localhost:8000 in your browser.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/` | Web UI |
-| `POST` | `/api/query` | Full RAG query (retrieve + summarize) |
-| `GET` | `/api/search?q=...&top_k=5` | Semantic search only |
-| `POST` | `/api/ingest` | Trigger data ingestion |
+| `POST` | `/api/query` | Full RAG: retrieve + LLM summarize |
+| `GET` | `/api/search?q=...&top_k=5` | Semantic search (retrieval only) |
+| `POST` | `/api/ingest` | Bulk data ingestion into ChromaDB |
+| `POST` | `/api/sync/json` | Sync tickets from JSON array |
+| `POST` | `/api/sync/csv` | Sync tickets from CSV content |
+| `POST` | `/api/sync/webhook` | Add a single ticket via webhook |
+| `GET` | `/api/sync/history` | Sync activity log |
+| `POST` | `/api/rca` | Root cause analysis (RAG + LLM) |
+| `POST` | `/api/jira-ticket` | Generate Jira ticket with severity classification |
+| `POST` | `/api/finetune` | Fine-tune the embedding model |
 | `GET` | `/api/health` | Health check |
 
-### Example API Call
+### Example
 
 ```bash
 curl -X POST http://localhost:8000/api/query \
   -H "Content-Type: application/json" \
-  -d '{"problem_description": "AHU supply fan VFD throwing overcurrent fault", "top_k": 5}'
+  -d '{"problem_description": "AHU supply fan VFD throwing overcurrent fault after startup", "top_k": 5}'
 ```
 
-## Data Format
+## Ticket Data Format
 
-The ingestion module expects a JSON array of ticket objects:
+Each ticket in the knowledge base has this structure:
 
 ```json
-[
-  {
-    "ticket_id": "BEMS-1001",
-    "source": "BEMS Ticket",
-    "title": "HVAC Zone 3 temperature oscillation",
-    "description": "Zone 3 experiencing temperature oscillations...",
-    "resolution": "Retuned PID parameters...",
-    "severity": "P2",
-    "component": "HVAC - VAV Controller",
-    "date": "2025-11-15",
-    "engineer": "jsmith"
-  }
-]
+{
+  "ticket_id": "BEMS-1001",
+  "source": "BEMS Ticket",
+  "title": "HVAC Zone 3 temperature oscillation",
+  "description": "Zone 3 experiencing temperature oscillations of +/- 4°F around setpoint...",
+  "resolution": "Retuned PID parameters: reduced proportional gain from 8 to 4...",
+  "severity": "P2",
+  "component": "HVAC - VAV Controller",
+  "date": "2025-11-15",
+  "engineer": "jsmith",
+  "resolution_steps": [
+    "Checked PID loop parameters on VAV controller",
+    "Reduced proportional gain from 8 to 4",
+    "Monitored zone temp for 30 minutes to confirm stability"
+  ],
+  "documents_used": [
+    "Honeywell VAV Controller Programming Guide v3.2",
+    "ASHRAE Guideline 36 — PID Loop Tuning"
+  ],
+  "commands_used": [
+    "bacnet read AV:101 present-value",
+    "bacnet write AV:101 present-value 4.0"
+  ]
+}
 ```
 
 Supported `source` values: `BEMS Ticket`, `Service Request`, `Webex Conversation`
-
-## Fine-Tuning (Optional, Currently Disabled)
-
-The project includes a fine-tuning module (`finetune.py`) that can improve retrieval accuracy by training the embedding model on BEMS-specific terminology. It is fully implemented but **commented out** by default.
-
-### What It Does
-
-- Generates **contrastive training pairs** from ticket data:
-  - **Positive pairs**: description <-> resolution (same ticket)
-  - **Negative pairs**: description <-> resolution (different component families)
-- Fine-tunes the `all-MiniLM-L6-v2` model using `CosineSimilarityLoss`
-- Splits data 80/20 for training/evaluation
-- Saves the fine-tuned model to `./finetuned_model/`
-
-### How to Enable
-
-1. **`finetune.py`** — Uncomment the entire module body (everything inside the file)
-2. **`app.py`** — Uncomment the `from finetune import ...` line and the `/api/finetune` endpoint
-3. **`templates/index.html`** — Uncomment the Fine-Tune sidebar button and tab panel
-4. **`static/js/app.js`** — Uncomment the fine-tune form handler
-
-### Standalone Usage
-
-```bash
-python finetune.py
-```
-
-After fine-tuning, update your `.env`:
-
-```
-EMBEDDING_MODEL=./finetuned_model/bems_ft_YYYYMMDD_HHMMSS
-```
-
-Then re-run `python ingest.py` to re-embed tickets with the fine-tuned model.
 
 ## Project Structure
 
 ```
 Prof_AI/
-├── app.py                  # FastAPI application and API endpoints
-├── rag_engine.py           # RAG retrieval and LLM summarization
-├── ingest.py               # Data ingestion and embedding pipeline
-├── finetune.py             # Embedding model fine-tuning (disabled)
-├── config.py               # Configuration management
+├── app.py                  # FastAPI application — routes, middleware, API endpoints
+├── rag_engine.py           # RAG pipeline — embedding, retrieval, LLM summarization
+├── rca.py                  # Root Cause Analyser — pattern detection + LLM-driven RCA
+├── jira_ticket.py          # Jira ticket generator — severity classification + formatting
+├── ingest.py               # Bulk data ingestion — JSON → embeddings → ChromaDB
+├── sync_tickets.py         # Real-time ticket sync — JSON/CSV/webhook with dedup
+├── analytics.py            # Analytics computation — metrics, counters, query logs
+├── finetune.py             # Embedding fine-tuning with contrastive learning
+├── config.py               # Pydantic-based configuration from .env
+├── db.py                   # Shared singletons — SentenceTransformer + ChromaDB client
+├── ticket_utils.py         # Shared utilities — document building, metadata, playbook parsing
 ├── requirements.txt        # Python dependencies
 ├── .env.example            # Environment variable template
 ├── sample_data/
-│   └── bems_tickets.json   # 45 sample BEMS support tickets
+│   └── bems_tickets.json   # 45 sample BEMS support tickets with resolution playbooks
 ├── templates/
-│   └── index.html          # Web UI template
+│   └── index.html          # Single-page web UI (Jinja2 template)
 ├── static/
-│   ├── css/style.css       # UI styles
-│   └── js/app.js           # Frontend logic
-├── chroma_db/              # ChromaDB persistence (created at runtime)
-└── finetuned_model/        # Fine-tuned models (created when fine-tuning runs)
+│   ├── css/style.css       # Dark-themed Cisco-branded UI styles
+│   └── js/app.js           # Frontend logic — forms, rendering, clipboard, playbook panel
+├── chroma_db/              # ChromaDB persistence (auto-created on ingestion)
+└── finetuned_model/        # Fine-tuned model output (created when fine-tuning runs)
 ```
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| Backend | FastAPI + Uvicorn |
-| Vector DB | ChromaDB |
-| Embeddings | sentence-transformers (all-MiniLM-L6-v2) |
-| LLM | Cisco CX AI Playground (gpt-4o-mini) |
-| Frontend | Vanilla HTML/CSS/JS |
+| Layer | Technology |
+|-------|-----------|
+| Backend | Python, FastAPI, Uvicorn |
+| Vector Database | ChromaDB (local, persistent) |
+| Embeddings | sentence-transformers (`all-MiniLM-L6-v2`, runs locally) |
+| LLM | Cisco CX AI Playground (`gpt-4o-mini`, via OpenAI SDK) |
+| Frontend | HTML, CSS, JavaScript (no framework) |
 | Templating | Jinja2 |
+| Configuration | pydantic-settings, python-dotenv |

@@ -3,12 +3,27 @@
     "ticket_id": "BEMS-1001",
     "source": "BEMS Ticket",
     "title": "HVAC Zone 3 temperature oscillation causing comfort complaints",
-    "description": "Zone 3 in Building A is experiencing temperature oscillations of +/- 4°F around setpoint. Occupants reporting discomfort. PID loop tuning suspected. VAV box damper actuator may be hunting.",
+    "description": "Zone 3 in Building A is experiencing temperature oscillations of +/- 4\u00b0F around setpoint. Occupants reporting discomfort. PID loop tuning suspected. VAV box damper actuator may be hunting.",
     "resolution": "Retuned PID parameters: reduced proportional gain from 8 to 4, increased integral time from 2min to 5min. Verified damper actuator stroke and calibrated. Oscillation resolved within 30 minutes.",
     "severity": "P2",
     "component": "HVAC - VAV Controller",
     "date": "2025-11-15",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Checked PID loop parameters on VAV controller",
+      "Reduced proportional gain from 8 to 4",
+      "Increased integral time from 2min to 5min",
+      "Calibrated damper actuator stroke",
+      "Monitored zone temp for 30 minutes to confirm stability"
+    ],
+    "documents_used": [
+      "Honeywell VAV Controller Programming Guide v3.2",
+      "ASHRAE Guideline 36 \u2014 PID Loop Tuning"
+    ],
+    "commands_used": [
+      "bacnet read AV:101 present-value",
+      "bacnet write AV:101 present-value 4.0"
+    ]
   },
   {
     "ticket_id": "BEMS-1002",
@@ -19,7 +34,22 @@
     "severity": "P1",
     "component": "Chiller Plant - BACnet",
     "date": "2025-12-01",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Ran BACnet Who-Is to identify Chiller 2 controller",
+      "Traced MSTP trunk cable from JB-14 to Chiller 2",
+      "Identified water-damaged cable section",
+      "Replaced faulty BACnet MSTP trunk cable",
+      "Verified staging sequence with both chillers online"
+    ],
+    "documents_used": [
+      "Trane Chiller BACnet Integration Manual",
+      "ASHRAE BACnet MSTP Cable Spec"
+    ],
+    "commands_used": [
+      "bacnet who-is",
+      "bacnet read BV:chiller2-run-status"
+    ]
   },
   {
     "ticket_id": "BEMS-1003",
@@ -30,18 +60,48 @@
     "severity": "P3",
     "component": "Lighting - Schedule Controller",
     "date": "2025-10-22",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Reviewed BACnet priority array for lighting zones",
+      "Identified manual override at priority 8 blocking schedule at 14",
+      "Adjusted schedule writes to priority 7",
+      "Cleared all active overrides via front-end",
+      "Tested full weekend cycle to verify release"
+    ],
+    "documents_used": [
+      "BACnet Priority Array Specification",
+      "Lighting Controller Programming Guide"
+    ],
+    "commands_used": [
+      "bacnet write BV:zone1-occupancy null",
+      "bacnet release BV:zone1-occupancy 7"
+    ]
   },
   {
     "ticket_id": "BEMS-1004",
     "source": "BEMS Ticket",
     "title": "AHU-2 supply fan VFD fault alarm recurring",
     "description": "AHU-2 supply fan variable frequency drive is generating fault F51 (overcurrent) every 3-4 hours. Drive auto-resets but causes brief temperature spikes downstream. Motor current draw is near rated FLA.",
-    "resolution": "Inspected fan belt tension — found belt slipping causing motor to draw excess current during acceleration. Replaced worn belts and adjusted tension. Cleaned VFD heat sink fins which were clogged with dust. No further faults after 72-hour monitoring period.",
+    "resolution": "Inspected fan belt tension \u2014 found belt slipping causing motor to draw excess current during acceleration. Replaced worn belts and adjusted tension. Cleaned VFD heat sink fins which were clogged with dust. No further faults after 72-hour monitoring period.",
     "severity": "P2",
     "component": "AHU - VFD",
     "date": "2025-09-18",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Checked VFD fault log for F51 overcurrent events",
+      "Measured motor current draw during acceleration",
+      "Inspected fan belt tension and found slipping",
+      "Replaced worn belts and adjusted tension",
+      "Cleaned VFD heat sink fins"
+    ],
+    "documents_used": [
+      "ABB ACS550 VFD Fault Code Manual",
+      "AHU Fan Belt Tensioning Procedure"
+    ],
+    "commands_used": [
+      "vfd read fault-log",
+      "vfd read motor-current"
+    ]
   },
   {
     "ticket_id": "BEMS-1005",
@@ -52,7 +112,22 @@
     "severity": "P3",
     "component": "Boiler Plant - PLC",
     "date": "2025-08-05",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Downloaded PLC program and reviewed timer logic",
+      "Identified 32-bit millisecond counter rollover bug",
+      "Reset timer and changed to date-based rotation",
+      "Uploaded modified program to PLC",
+      "Verified both boilers alternate weekly"
+    ],
+    "documents_used": [
+      "Allen-Bradley PLC Timer Function Block Manual",
+      "Boiler Lead-Lag Sequence of Operations"
+    ],
+    "commands_used": [
+      "plc read timer-accumulator",
+      "plc write lead-lag-rotation-mode date-based"
+    ]
   },
   {
     "ticket_id": "BEMS-1006",
@@ -63,7 +138,22 @@
     "severity": "P2",
     "component": "AHU - Economizer",
     "date": "2025-11-28",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Read enthalpy sensor value (frozen at 28 BTU/lb)",
+      "Compared with portable enthalpy meter reading",
+      "Replaced failed outdoor air enthalpy sensor",
+      "Calibrated new sensor against reference",
+      "Verified economizer changeover logic"
+    ],
+    "documents_used": [
+      "Honeywell Enthalpy Sensor Calibration Guide",
+      "ASHRAE 90.1 Economizer Requirements"
+    ],
+    "commands_used": [
+      "bacnet read AV:enthalpy-sensor present-value",
+      "bacnet write AV:enthalpy-offset 0"
+    ]
   },
   {
     "ticket_id": "BEMS-1007",
@@ -74,7 +164,19 @@
     "severity": "P1",
     "component": "Fire-HVAC Integration",
     "date": "2025-12-10",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Traced fire panel to BEMS wiring",
+      "Identified dry contact relay with loose terminal",
+      "Re-terminated relay wiring",
+      "Added 2-second debounce filter in BEMS input module",
+      "Monitored for 2 weeks \u2014 no false shutdowns"
+    ],
+    "documents_used": [
+      "NFPA 72 Fire Alarm Integration",
+      "BEMS Fire-HVAC Interlock Wiring Diagram"
+    ],
+    "commands_used": []
   },
   {
     "ticket_id": "BEMS-1008",
@@ -85,18 +187,48 @@
     "severity": "P2",
     "component": "Energy Metering - Modbus",
     "date": "2025-10-30",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Ran Modbus poll diagnostics \u2014 identified timeout pattern",
+      "Checked network switch port statistics on floor 5 IDF",
+      "Forced port speed to 100Mbps full duplex",
+      "Increased Modbus poll timeout from 3s to 8s",
+      "Verified data continuity for 24 hours"
+    ],
+    "documents_used": [
+      "Modbus TCP Implementation Guide",
+      "Power Meter Modbus Register Map"
+    ],
+    "commands_used": [
+      "modbus read 192.168.5.10:502 40001 10",
+      "ping -c 100 192.168.5.10"
+    ]
   },
   {
     "ticket_id": "BEMS-1009",
     "source": "BEMS Ticket",
     "title": "Cooling tower fan cycling too frequently",
-    "description": "Cooling tower fans cycling on/off every 2-3 minutes. Condenser water temperature unstable. Fan motors at risk of premature failure from excessive starts. Current differential setpoint is only 1°F.",
-    "resolution": "Widened condenser water temperature differential from 1°F to 3°F (on at 85°F, off at 82°F). Added minimum run time of 10 minutes to prevent short cycling. Fan starts reduced from 40+/day to under 10/day. Motor current profiles now stable.",
+    "description": "Cooling tower fans cycling on/off every 2-3 minutes. Condenser water temperature unstable. Fan motors at risk of premature failure from excessive starts. Current differential setpoint is only 1\u00b0F.",
+    "resolution": "Widened condenser water temperature differential from 1\u00b0F to 3\u00b0F (on at 85\u00b0F, off at 82\u00b0F). Added minimum run time of 10 minutes to prevent short cycling. Fan starts reduced from 40+/day to under 10/day. Motor current profiles now stable.",
     "severity": "P2",
     "component": "Cooling Tower - Controls",
     "date": "2025-07-14",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Reviewed condenser water temp differential setpoint",
+      "Widened differential from 1\u00b0F to 3\u00b0F (on 85\u00b0F, off 82\u00b0F)",
+      "Added 10-minute minimum run time to fan logic",
+      "Monitored fan start count over 24 hours",
+      "Verified motor current profiles stable"
+    ],
+    "documents_used": [
+      "Cooling Tower Control Sequence",
+      "CTI Cooling Tower Performance Standards"
+    ],
+    "commands_used": [
+      "bacnet read AV:cond-water-temp present-value",
+      "bacnet write AV:fan-min-runtime 600"
+    ]
   },
   {
     "ticket_id": "BEMS-1010",
@@ -107,7 +239,22 @@
     "severity": "P1",
     "component": "DDC Controller - Firmware",
     "date": "2025-11-05",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Downloaded firmware patch v4.2.1 from manufacturer",
+      "Applied patch to all three affected DDC controllers",
+      "Restored controller databases from backup",
+      "Configured NTP sync for daily time update",
+      "Verified DST handling in test environment"
+    ],
+    "documents_used": [
+      "DDC Controller Firmware Release Notes v4.2.1",
+      "NTP Configuration Guide"
+    ],
+    "commands_used": [
+      "ddc firmware-upgrade 4.2.1",
+      "ddc restore-database backup-20251104"
+    ]
   },
   {
     "ticket_id": "BEMS-1011",
@@ -118,7 +265,22 @@
     "severity": "P4",
     "component": "Ventilation - DCV",
     "date": "2025-06-20",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Installed Senva CO2 sensors in 12 conference rooms",
+      "Programmed DDC for OA damper modulation (15\u2013100%)",
+      "Configured CO2 setpoint range 800\u20131200 ppm",
+      "Verified airflow meets ASHRAE 62.1 at all setpoints",
+      "Documented 18% OA energy reduction"
+    ],
+    "documents_used": [
+      "ASHRAE 62.1 Ventilation for Acceptable IAQ",
+      "Senva CO2 Sensor Installation Guide"
+    ],
+    "commands_used": [
+      "bacnet write AV:oa-damper-min 15",
+      "bacnet write AV:co2-setpoint-high 1200"
+    ]
   },
   {
     "ticket_id": "BEMS-1012",
@@ -129,18 +291,48 @@
     "severity": "P4",
     "component": "Solar PV - Integration",
     "date": "2025-08-12",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Configured Modbus TCP connection to SolarEdge gateway",
+      "Mapped registers: AC power, daily energy, inverter status",
+      "Set 30-second poll interval",
+      "Created dashboard widgets for kW, kWh, grid offset",
+      "Configured inverter fault alerts"
+    ],
+    "documents_used": [
+      "SolarEdge Modbus TCP Register Map",
+      "BEMS Dashboard API Documentation"
+    ],
+    "commands_used": [
+      "modbus read 192.168.1.50:502 40083 4",
+      "modbus read 192.168.1.50:502 40071 2"
+    ]
   },
   {
     "ticket_id": "BEMS-1013",
     "source": "Webex Conversation",
     "title": "Discussion on AHU freezestat trips during polar vortex",
-    "description": "Team discussion about multiple AHU freezestat trips during extreme cold event (-15°F). AHU-1, AHU-3, and AHU-7 all tripped within 2 hours. Preheat coils were active but insufficient. Mixing box temperatures dropped below 35°F triggering safety shutdown.",
-    "resolution": "Implemented cold weather protocol: added low-limit OA damper position (max 25% below 0°F OA temp), increased preheat coil valve authority, added 15-minute warm-up cycle before economizer enables after freezestat reset. Verified glycol concentration in preheat loops is adequate for -20°F. Created alarm escalation rule for OA temps below -10°F.",
+    "description": "Team discussion about multiple AHU freezestat trips during extreme cold event (-15\u00b0F). AHU-1, AHU-3, and AHU-7 all tripped within 2 hours. Preheat coils were active but insufficient. Mixing box temperatures dropped below 35\u00b0F triggering safety shutdown.",
+    "resolution": "Implemented cold weather protocol: added low-limit OA damper position (max 25% below 0\u00b0F OA temp), increased preheat coil valve authority, added 15-minute warm-up cycle before economizer enables after freezestat reset. Verified glycol concentration in preheat loops is adequate for -20\u00b0F. Created alarm escalation rule for OA temps below -10\u00b0F.",
     "severity": "P1",
     "component": "AHU - Freeze Protection",
     "date": "2026-01-08",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Added OA damper low-limit (max 25% below 0\u00b0F)",
+      "Increased preheat coil valve authority",
+      "Implemented 15-minute warm-up before economizer enable",
+      "Verified glycol concentration for -20\u00b0F",
+      "Created OA temp below -10\u00b0F alarm escalation"
+    ],
+    "documents_used": [
+      "AHU Freeze Protection Sequence",
+      "Glycol Concentration vs Freeze Point Chart"
+    ],
+    "commands_used": [
+      "bacnet write AV:oa-damper-max-cold 25",
+      "bacnet write AV:warmup-timer 900"
+    ]
   },
   {
     "ticket_id": "BEMS-1014",
@@ -151,7 +343,22 @@
     "severity": "P1",
     "component": "BACnet - Network",
     "date": "2026-01-22",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Obtained new subnet info from network team",
+      "Updated BBMD foreign device table on floor 10 router",
+      "Updated BBMD registrations on head-end BACnet/IP router",
+      "Verified all 156 floor 10 points online",
+      "Added BACnet VLANs to change management list"
+    ],
+    "documents_used": [
+      "BACnet BBMD Configuration Guide",
+      "Network VLAN Documentation"
+    ],
+    "commands_used": [
+      "bacnet bbmdt-register 10.0.10.1",
+      "bacnet who-is"
+    ]
   },
   {
     "ticket_id": "BEMS-1015",
@@ -162,18 +369,48 @@
     "severity": "P2",
     "component": "CRAC - Humidity",
     "date": "2026-02-05",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Traced humidity migration path from AHU-4",
+      "Identified unsealed cable penetrations to server room",
+      "Sealed penetrations with fire-stop material",
+      "Adjusted AHU-4 humidifier setpoint 50% to 45% RH",
+      "Monitored server room \u2014 stabilized at 48% RH"
+    ],
+    "documents_used": [
+      "ASHRAE Datacom Environmental Guidelines",
+      "Fire-Stop Installation Spec"
+    ],
+    "commands_used": [
+      "bacnet read AV:server-room-rh present-value",
+      "bacnet write AV:ahu4-humidifier-sp 45"
+    ]
   },
   {
     "ticket_id": "BEMS-1016",
     "source": "BEMS Ticket",
     "title": "Elevator machine room overheating alarm",
-    "description": "Elevator machine room temperature exceeding 95°F during afternoon hours. Dedicated split AC unit showing clean filter and normal operation on BEMS. Room has two elevator machines generating significant heat. Exhaust fan running but inadequate.",
-    "resolution": "Split AC unit refrigerant charge was low — found small leak at flare fitting. Recharged with R-410A after repair. Added supplemental exhaust fan with thermostat control (on at 85°F, off at 78°F). Room temperature now maintains below 82°F during peak load.",
+    "description": "Elevator machine room temperature exceeding 95\u00b0F during afternoon hours. Dedicated split AC unit showing clean filter and normal operation on BEMS. Room has two elevator machines generating significant heat. Exhaust fan running but inadequate.",
+    "resolution": "Split AC unit refrigerant charge was low \u2014 found small leak at flare fitting. Recharged with R-410A after repair. Added supplemental exhaust fan with thermostat control (on at 85\u00b0F, off at 78\u00b0F). Room temperature now maintains below 82\u00b0F during peak load.",
     "severity": "P2",
     "component": "HVAC - Split System",
     "date": "2025-12-18",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Checked refrigerant charge \u2014 found low",
+      "Located leak at flare fitting",
+      "Repaired fitting and recharged with R-410A",
+      "Installed supplemental exhaust fan with thermostat",
+      "Verified room temp maintains below 82\u00b0F"
+    ],
+    "documents_used": [
+      "R-410A Charging Procedures",
+      "Split System Troubleshooting Guide"
+    ],
+    "commands_used": [
+      "bacnet read AV:room-temp present-value",
+      "bacnet read AV:split-ac-status present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1017",
@@ -184,7 +421,19 @@
     "severity": "P4",
     "component": "BEMS - Web Portal",
     "date": "2025-09-25",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Deployed tenant web portal with SSO",
+      "Configured BEMS API for schedule override creation",
+      "Set up approval workflow (auto vs manager)",
+      "Integrated billing calculation by zone/duration",
+      "Tested 2-hour advance request flow"
+    ],
+    "documents_used": [
+      "BEMS REST API Documentation",
+      "Tenant Portal SSO Integration Guide"
+    ],
+    "commands_used": []
   },
   {
     "ticket_id": "BEMS-1018",
@@ -195,7 +444,22 @@
     "severity": "P3",
     "component": "Leak Detection - Sensors",
     "date": "2025-11-10",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Inspected leak detection cable near steam piping",
+      "Identified condensation from uninsulated fittings",
+      "Insulated steam pipe fittings with fiberglass wrap",
+      "Relocated 3-foot cable section from steam header",
+      "Added 60-second alarm delay filter"
+    ],
+    "documents_used": [
+      "Leak Detection Rope Sensor Manual",
+      "Steam Pipe Insulation Spec"
+    ],
+    "commands_used": [
+      "bacnet read BV:leak-sensor-alarm present-value",
+      "bacnet write AV:alarm-delay 60"
+    ]
   },
   {
     "ticket_id": "BEMS-1019",
@@ -206,18 +470,48 @@
     "severity": "P2",
     "component": "VRF - Outdoor Unit",
     "date": "2025-10-05",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Read high-pressure switch trip value (410 psig)",
+      "Inspected condenser coil \u2014 found fouling",
+      "Chemically cleaned condenser coil",
+      "Straightened bent fins",
+      "Verified subcooling and superheat in range"
+    ],
+    "documents_used": [
+      "Daikin VRF Service Manual",
+      "R-410A Pressure-Temperature Chart"
+    ],
+    "commands_used": [
+      "vrf read high-pressure",
+      "vrf read subcooling"
+    ]
   },
   {
     "ticket_id": "BEMS-1020",
     "source": "Webex Conversation",
     "title": "Planning optimal start algorithm tuning for winter",
-    "description": "Team discussion on optimal start algorithm not bringing building to setpoint before occupancy during winter. Current algorithm underestimates warm-up time when OAT is below 20°F. Building takes 45 minutes longer than predicted to reach 72°F.",
+    "description": "Team discussion on optimal start algorithm not bringing building to setpoint before occupancy during winter. Current algorithm underestimates warm-up time when OAT is below 20\u00b0F. Building takes 45 minutes longer than predicted to reach 72\u00b0F.",
     "resolution": "Adjusted optimal start thermal model coefficients: increased building thermal mass factor from 0.6 to 0.85, added wind chill compensation factor, extended maximum pre-start time from 3 hours to 4.5 hours. Incorporated weather forecast API data for next-day OAT prediction instead of relying solely on current OAT. After 2 weeks of learning, algorithm now achieves setpoint within 10 minutes of occupancy start across all weather conditions.",
     "severity": "P3",
     "component": "BEMS - Optimal Start",
     "date": "2026-01-15",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Adjusted thermal mass factor 0.6 to 0.85",
+      "Added wind chill compensation factor",
+      "Extended max pre-start time 3h to 4.5h",
+      "Integrated weather forecast API for OAT prediction",
+      "Ran 2-week learning period"
+    ],
+    "documents_used": [
+      "Optimal Start Algorithm Technical Note",
+      "Weather API Integration Guide"
+    ],
+    "commands_used": [
+      "bems read optimal-start-params",
+      "bems write thermal-mass-factor 0.85"
+    ]
   },
   {
     "ticket_id": "BEMS-1021",
@@ -228,18 +522,48 @@
     "severity": "P2",
     "component": "AHU - Static Pressure",
     "date": "2025-07-22",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Compared BEMS static pressure with portable manometer",
+      "Identified sensor bias (1.8 vs 1.1 in.w.c.)",
+      "Replaced diaphragm sensor with pinhole leak",
+      "Recalibrated against reference gauge",
+      "Verified 1.5 in.w.c. setpoint and upper floor airflow"
+    ],
+    "documents_used": [
+      "Static Pressure Sensor Calibration Procedure",
+      "VAV Airflow Design Spec"
+    ],
+    "commands_used": [
+      "bacnet read AV:duct-static present-value",
+      "bacnet write AV:static-sp 1.5"
+    ]
   },
   {
     "ticket_id": "BEMS-1022",
     "source": "BEMS Ticket",
     "title": "Hot water reset schedule not adjusting based on outdoor air temperature",
-    "description": "Hot water supply temperature remains at 180°F regardless of outdoor conditions. Reset schedule configured to lower HW temp to 140°F when OAT exceeds 55°F. Building is overheating on mild days and wasting gas.",
-    "resolution": "OAT sensor wiring had been swapped with return air sensor during a recent panel rewiring. BEMS was reading 72°F return air as outdoor temp, so reset schedule never triggered. Corrected wiring at terminal strip TB-4. Verified HW reset now modulates properly between 140°F and 180°F based on actual OAT.",
+    "description": "Hot water supply temperature remains at 180\u00b0F regardless of outdoor conditions. Reset schedule configured to lower HW temp to 140\u00b0F when OAT exceeds 55\u00b0F. Building is overheating on mild days and wasting gas.",
+    "resolution": "OAT sensor wiring had been swapped with return air sensor during a recent panel rewiring. BEMS was reading 72\u00b0F return air as outdoor temp, so reset schedule never triggered. Corrected wiring at terminal strip TB-4. Verified HW reset now modulates properly between 140\u00b0F and 180\u00b0F based on actual OAT.",
     "severity": "P3",
     "component": "Boiler Plant - HW Reset",
     "date": "2025-09-03",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Traced OAT sensor wiring at terminal strip TB-4",
+      "Found OAT swapped with return air sensor",
+      "Corrected wiring to proper terminals",
+      "Verified BEMS reading actual OAT",
+      "Confirmed HW reset modulates 140\u2013180\u00b0F by OAT"
+    ],
+    "documents_used": [
+      "Boiler HW Reset Schedule Spec",
+      "Sensor Wiring Diagram TB-4"
+    ],
+    "commands_used": [
+      "bacnet read AV:oat present-value",
+      "bacnet read AV:hw-supply-temp present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1023",
@@ -250,7 +574,22 @@
     "severity": "P2",
     "component": "Parking Garage - CO Ventilation",
     "date": "2025-10-12",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Checked CO sensor readings overnight (35\u201350 ppm)",
+      "Verified sensor age \u2014 past 5-year life",
+      "Replaced both B2 CO sensors with electrochemical units",
+      "Verified readings 0\u20135 ppm overnight",
+      "Added sensor replacement to asset schedule"
+    ],
+    "documents_used": [
+      "CO Sensor Life Expectancy Guide",
+      "Parking Garage Ventilation Code"
+    ],
+    "commands_used": [
+      "bacnet read AV:co-level-b2 present-value",
+      "bacnet read AV:exhaust-fan-speed present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1024",
@@ -261,18 +600,48 @@
     "severity": "P2",
     "component": "CHW Plant - DP Control",
     "date": "2025-11-20",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Checked CHW pump VFD mode \u2014 found manual override",
+      "Returned VFD to auto control from BEMS DP loop",
+      "Verified DP dropped to 12 psid setpoint",
+      "Confirmed valve noise stopped on floor 3",
+      "Added VFD manual override alarm"
+    ],
+    "documents_used": [
+      "CHW DP Control Sequence",
+      "VFD Override Alarm Configuration"
+    ],
+    "commands_used": [
+      "bacnet read AV:chw-dp present-value",
+      "bacnet write BV:pump-vfd-mode auto"
+    ]
   },
   {
     "ticket_id": "BEMS-1025",
     "source": "Service Request",
     "title": "Add occupancy sensor integration for energy savings in open office areas",
     "description": "Facilities requesting occupancy-based HVAC and lighting setback for 6 open office areas in Building D. Current system operates on fixed time schedules. Areas are frequently unoccupied during afternoons due to hybrid work policy.",
-    "resolution": "Installed ceiling-mounted PIR occupancy sensors (one per 400 sq ft zone). Integrated sensors with BEMS via BACnet. Programmed unoccupied setback: HVAC setpoint offset +4°F cooling / -4°F heating, lighting to 30% after 20 minutes of no motion. Implemented a 5-minute grace period before setback activates. Measured 22% reduction in HVAC energy and 35% reduction in lighting energy for the pilot zones.",
+    "resolution": "Installed ceiling-mounted PIR occupancy sensors (one per 400 sq ft zone). Integrated sensors with BEMS via BACnet. Programmed unoccupied setback: HVAC setpoint offset +4\u00b0F cooling / -4\u00b0F heating, lighting to 30% after 20 minutes of no motion. Implemented a 5-minute grace period before setback activates. Measured 22% reduction in HVAC energy and 35% reduction in lighting energy for the pilot zones.",
     "severity": "P4",
     "component": "Occupancy - Energy Savings",
     "date": "2025-08-28",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Installed PIR occupancy sensors (1 per 400 sq ft)",
+      "Integrated sensors with BEMS via BACnet",
+      "Programmed setback: +4\u00b0F cool / -4\u00b0F heat, 30% lighting",
+      "Set 20-min no-motion delay and 5-min grace period",
+      "Measured 22% HVAC and 35% lighting reduction"
+    ],
+    "documents_used": [
+      "ASHRAE 90.1 Occupancy Controls",
+      "PIR Sensor BACnet Integration Guide"
+    ],
+    "commands_used": [
+      "bacnet write AV:unocc-cooling-offset 4",
+      "bacnet write AV:lighting-setback 30"
+    ]
   },
   {
     "ticket_id": "BEMS-1026",
@@ -283,29 +652,74 @@
     "severity": "P1",
     "component": "Cooling Tower - Water Treatment",
     "date": "2025-12-05",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Checked pump \u2014 motor hums, impeller not turning",
+      "Disassembled pump, found seized impeller",
+      "Cleaned crystallized residue, replaced suction strainer",
+      "Flushed chemical lines and primed pump",
+      "Verified conductivity in target range"
+    ],
+    "documents_used": [
+      "Chemical Feed Pump Maintenance Manual",
+      "Cooling Tower Water Treatment Spec"
+    ],
+    "commands_used": [
+      "bacnet read AV:conductivity present-value",
+      "bacnet read BV:pump-run-status present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1027",
     "source": "Webex Conversation",
     "title": "Discussion on stairwell pressurization fan failure during fire drill",
     "description": "During quarterly fire drill, stairwell pressurization fans in Tower B did not activate. Fire command panel sent signal but BEMS showed no fan start command received. Building code requires 0.05 in.w.c. minimum pressure differential. Life safety concern flagged by fire marshal.",
-    "resolution": "Interposing relay module between fire panel and BEMS fan starter had a blown 24V fuse. Relay was failing silently with no alarm feedback. Replaced fuse and added end-of-line resistor monitoring on the relay circuit to detect future open-circuit faults. Tested all stairwell fans — confirmed proper pressurization at 0.08 in.w.c. Added monthly automated fan test sequence to BEMS schedule.",
+    "resolution": "Interposing relay module between fire panel and BEMS fan starter had a blown 24V fuse. Relay was failing silently with no alarm feedback. Replaced fuse and added end-of-line resistor monitoring on the relay circuit to detect future open-circuit faults. Tested all stairwell fans \u2014 confirmed proper pressurization at 0.08 in.w.c. Added monthly automated fan test sequence to BEMS schedule.",
     "severity": "P1",
     "component": "Life Safety - Pressurization",
     "date": "2026-02-10",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Traced fire panel to BEMS fan starter circuit",
+      "Found blown 24V fuse in interposing relay",
+      "Replaced fuse",
+      "Added end-of-line resistor monitoring",
+      "Tested all stairwell fans \u2014 0.08 in.w.c. achieved"
+    ],
+    "documents_used": [
+      "NFPA 101 Stairwell Pressurization",
+      "Fire Panel to BEMS Interlock Diagram"
+    ],
+    "commands_used": [
+      "bacnet read BV:pressurization-fan-cmd present-value",
+      "manometer read 0.08"
+    ]
   },
   {
     "ticket_id": "BEMS-1028",
     "source": "BEMS Ticket",
     "title": "Glycol loop air lock preventing heat transfer in radiant floor system",
-    "description": "Radiant floor heating in lobby area not warming up despite boiler supplying 140°F water. BEMS shows zone valve open and pump running. Supply and return temperatures are nearly identical (3°F delta vs expected 20°F). Flow meter shows near-zero flow.",
-    "resolution": "Air lock in the glycol loop at the highest point of the radiant floor circuit (mezzanine level). Opened manual air vent at the high point and bled trapped air for approximately 8 minutes until solid glycol flow was established. Installed automatic air vents at the two highest points in the loop. Delta-T returned to 18°F and lobby temperature reached setpoint within 2 hours.",
+    "description": "Radiant floor heating in lobby area not warming up despite boiler supplying 140\u00b0F water. BEMS shows zone valve open and pump running. Supply and return temperatures are nearly identical (3\u00b0F delta vs expected 20\u00b0F). Flow meter shows near-zero flow.",
+    "resolution": "Air lock in the glycol loop at the highest point of the radiant floor circuit (mezzanine level). Opened manual air vent at the high point and bled trapped air for approximately 8 minutes until solid glycol flow was established. Installed automatic air vents at the two highest points in the loop. Delta-T returned to 18\u00b0F and lobby temperature reached setpoint within 2 hours.",
     "severity": "P2",
     "component": "Radiant Floor - Glycol",
     "date": "2026-01-18",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Identified high point at mezzanine level",
+      "Opened manual air vent, bled air ~8 minutes",
+      "Established solid glycol flow",
+      "Installed automatic air vents at two high points",
+      "Verified delta-T 18\u00b0F, lobby at setpoint"
+    ],
+    "documents_used": [
+      "Radiant Floor Glycol System Manual",
+      "Air Elimination Procedures"
+    ],
+    "commands_used": [
+      "bacnet read AV:supply-temp present-value",
+      "bacnet read AV:return-temp present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1029",
@@ -316,7 +730,22 @@
     "severity": "P4",
     "component": "IAQ - Dashboard",
     "date": "2025-07-30",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Deployed 24 Airthings IAQ monitors",
+      "Built API integration for 5-minute data pull",
+      "Created Grafana dashboard with WELL indicators",
+      "Configured read-only tenant access",
+      "Set 12-month historical retention"
+    ],
+    "documents_used": [
+      "WELL Building Standard IAQ",
+      "Airthings API Documentation"
+    ],
+    "commands_used": [
+      "api get /iaq/sensors",
+      "grafana create-dashboard iaq-tenant"
+    ]
   },
   {
     "ticket_id": "BEMS-1030",
@@ -327,7 +756,22 @@
     "severity": "P2",
     "component": "Kitchen - Exhaust/MAU",
     "date": "2025-11-25",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Traced MAU interlock wiring",
+      "Found interlock wired to EF-6 instead of EF-5",
+      "Rewired interlock to correct EF-5 starter",
+      "Verified MAU starts within 5 seconds of exhaust",
+      "Confirmed kitchen pressure -0.02 in.w.c."
+    ],
+    "documents_used": [
+      "Kitchen Exhaust/MAU Interlock Code",
+      "EF-5 Starter Wiring Diagram"
+    ],
+    "commands_used": [
+      "bacnet read BV:mau-run-status present-value",
+      "bacnet read BV:exhaust-ef5-status present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1031",
@@ -338,40 +782,100 @@
     "severity": "P1",
     "component": "BACnet - MSTP",
     "date": "2026-02-15",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Measured trunk 7 cable length \u2014 3,800 ft + stubs",
+      "Installed BACnet router to split trunk",
+      "Identified defective RS-485 transceiver on one controller",
+      "Replaced transceiver chip",
+      "Added MSTP trunk health monitoring"
+    ],
+    "documents_used": [
+      "BACnet MSTP MS/TP Specification",
+      "RS-485 Troubleshooting Guide"
+    ],
+    "commands_used": [
+      "bacnet mstp-diagnostic trunk-7",
+      "bacnet token-pass-count"
+    ]
   },
   {
     "ticket_id": "BEMS-1032",
     "source": "BEMS Ticket",
     "title": "AHU-9 return fan tracking not matching supply fan speed",
     "description": "AHU-9 return fan running at 30% speed while supply fan is at 65%. Building pressure going highly positive (+0.15 in.w.c.) causing exterior doors difficult to open. Return fan VFD receiving correct speed command from BEMS but actual speed not matching.",
-    "resolution": "Return fan VFD had a speed reference signal issue — the 0-10V analog output from the controller was only reaching 4.2V maximum due to a failing analog output module. Replaced the DDC analog output module. Return fan now tracks supply fan properly with offset. Building pressure returned to design +0.03 in.w.c.",
+    "resolution": "Return fan VFD had a speed reference signal issue \u2014 the 0-10V analog output from the controller was only reaching 4.2V maximum due to a failing analog output module. Replaced the DDC analog output module. Return fan now tracks supply fan properly with offset. Building pressure returned to design +0.03 in.w.c.",
     "severity": "P2",
     "component": "AHU - Return Fan",
     "date": "2025-12-22",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Measured 0-10V analog output \u2014 only 4.2V max",
+      "Identified failing DDC analog output module",
+      "Replaced analog output module",
+      "Verified return fan tracks supply with offset",
+      "Confirmed building pressure +0.03 in.w.c."
+    ],
+    "documents_used": [
+      "DDC Analog Output Calibration",
+      "AHU Supply/Return Tracking Sequence"
+    ],
+    "commands_used": [
+      "bacnet read AV:return-fan-speed-cmd present-value",
+      "multimeter read AO-channel-3"
+    ]
   },
   {
     "ticket_id": "BEMS-1033",
     "source": "BEMS Ticket",
     "title": "Dual-duct mixing box hot deck valve leaking through",
-    "description": "Zone 5A on the 7th floor cannot maintain cooling setpoint. BEMS shows cold deck damper fully open and hot deck damper fully closed but discharge temperature is 82°F. Hot deck supply is 120°F. Suspected valve leakage on hot deck.",
-    "resolution": "Hot deck control valve actuator had mechanically disconnected from the valve stem — the coupler had cracked, so while the actuator showed closed position, the valve was free-floating and gravity was holding it partially open. Replaced actuator coupler and verified valve closure by checking discharge temperature dropped to cold deck supply temp (55°F) when hot deck commanded closed. Zone temperature returned to setpoint.",
+    "description": "Zone 5A on the 7th floor cannot maintain cooling setpoint. BEMS shows cold deck damper fully open and hot deck damper fully closed but discharge temperature is 82\u00b0F. Hot deck supply is 120\u00b0F. Suspected valve leakage on hot deck.",
+    "resolution": "Hot deck control valve actuator had mechanically disconnected from the valve stem \u2014 the coupler had cracked, so while the actuator showed closed position, the valve was free-floating and gravity was holding it partially open. Replaced actuator coupler and verified valve closure by checking discharge temperature dropped to cold deck supply temp (55\u00b0F) when hot deck commanded closed. Zone temperature returned to setpoint.",
     "severity": "P2",
     "component": "Dual Duct - Mixing Box",
     "date": "2025-10-18",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Checked discharge temp vs damper positions",
+      "Inspected hot deck valve actuator",
+      "Found cracked coupler \u2014 actuator disconnected",
+      "Replaced actuator coupler",
+      "Verified valve closure, discharge at 55\u00b0F cold deck"
+    ],
+    "documents_used": [
+      "Dual Duct Mixing Box Service Manual",
+      "Actuator Coupler Replacement Procedure"
+    ],
+    "commands_used": [
+      "bacnet read AV:discharge-temp present-value",
+      "bacnet read AV:hot-deck-damper present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1034",
     "source": "Service Request",
     "title": "Implement demand response integration with utility grid signal",
     "description": "Building owner wants to participate in utility demand response program. Requires BEMS to receive OpenADR signals from the utility and automatically implement load shedding strategies during DR events. Potential revenue of $45K/year from participation.",
-    "resolution": "Installed OpenADR 2.0b VTN client on BEMS server. Configured three DR shed levels: Level 1 (global setpoint adjust +2°F), Level 2 (dim non-essential lighting 30%, raise setpoint +4°F), Level 3 (shed non-critical loads, max setpoint offset +6°F, reduce ventilation to ASHRAE minimums). Tested each level during a simulated DR event. Peak demand reduced by 280kW at Level 3. Set up auto-notification to facility manager when DR events are dispatched.",
+    "resolution": "Installed OpenADR 2.0b VTN client on BEMS server. Configured three DR shed levels: Level 1 (global setpoint adjust +2\u00b0F), Level 2 (dim non-essential lighting 30%, raise setpoint +4\u00b0F), Level 3 (shed non-critical loads, max setpoint offset +6\u00b0F, reduce ventilation to ASHRAE minimums). Tested each level during a simulated DR event. Peak demand reduced by 280kW at Level 3. Set up auto-notification to facility manager when DR events are dispatched.",
     "severity": "P4",
     "component": "BEMS - Demand Response",
     "date": "2025-06-15",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Installed OpenADR 2.0b VTN client on BEMS",
+      "Configured Level 1/2/3 shed strategies",
+      "Tested simulated DR event for each level",
+      "Verified 280kW reduction at Level 3",
+      "Set up facility manager auto-notification"
+    ],
+    "documents_used": [
+      "OpenADR 2.0b Profile Specification",
+      "Utility DR Program Requirements"
+    ],
+    "commands_used": [
+      "openadr register-vtn",
+      "bems dr-shed-level 3"
+    ]
   },
   {
     "ticket_id": "BEMS-1035",
@@ -382,40 +886,100 @@
     "severity": "P3",
     "component": "DHW - Scheduling",
     "date": "2026-01-25",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Correlated energy spikes with equipment schedules",
+      "Traced to DHW recirc system",
+      "Found timer on 24/7 instead of weekday-only",
+      "Corrected DHW schedule to occupancy",
+      "Verified weekend baseline dropped 140kW"
+    ],
+    "documents_used": [
+      "DHW System Sequence of Operations",
+      "Building Occupancy Schedule"
+    ],
+    "commands_used": [
+      "bems energy-trend 2am-4am",
+      "bacnet read AV:dhw-pump-schedule present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1036",
     "source": "BEMS Ticket",
     "title": "Emergency generator auto-transfer switch not communicating with BEMS",
     "description": "BEMS lost all monitoring points for the emergency generator and automatic transfer switch (ATS) two weeks ago. No alarms, fuel level, run status, or transfer position data available. Generator PM is overdue and fuel level is unknown. ATS is Cummins OTEC with Modbus interface.",
-    "resolution": "Modbus RS-485 communication cable between ATS and BEMS had been accidentally disconnected during UPS battery replacement work in the electrical room. Cable was lying loose behind the UPS rack. Reconnected cable to BEMS Modbus gateway port 3. Verified all 28 monitoring points came back online. Fuel level was at 62% — scheduled delivery. Added cable labels and conduit protection for critical communication runs.",
+    "resolution": "Modbus RS-485 communication cable between ATS and BEMS had been accidentally disconnected during UPS battery replacement work in the electrical room. Cable was lying loose behind the UPS rack. Reconnected cable to BEMS Modbus gateway port 3. Verified all 28 monitoring points came back online. Fuel level was at 62% \u2014 scheduled delivery. Added cable labels and conduit protection for critical communication runs.",
     "severity": "P1",
     "component": "Emergency Power - Comms",
     "date": "2025-12-28",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Checked Modbus gateway port 3 connection",
+      "Found cable disconnected behind UPS rack",
+      "Reconnected cable to BEMS Modbus gateway",
+      "Verified all 28 ATS points online",
+      "Added cable labels and conduit protection"
+    ],
+    "documents_used": [
+      "Cummins OTEC Modbus Register Map",
+      "ATS to BEMS Wiring Diagram"
+    ],
+    "commands_used": [
+      "modbus read 192.168.2.20:502 40001 28",
+      "modbus scan 192.168.2.20"
+    ]
   },
   {
     "ticket_id": "BEMS-1037",
     "source": "BEMS Ticket",
     "title": "Perimeter baseboard heaters activating in summer",
-    "description": "South-facing perimeter zones in Building C activating baseboard heaters despite outdoor temperature of 88°F. Occupants complaining of excessive heat near windows. BEMS shows baseboard heating valve open at 40%. Zone thermostat calling for cooling, not heating.",
-    "resolution": "Zone controller sequence of operations had a logic error in the deadband calculation. When cooling setpoint (74°F) minus deadband (6°F) yielded 68°F, and the zone temp briefly dipped to 68°F due to overcooling from the VAV, the baseboard heating loop activated. Reduced deadband from 6°F to 3°F and added an outdoor air temperature lockout (disable baseboards when OAT > 65°F). Issue resolved across all 14 perimeter zones using the same template.",
+    "description": "South-facing perimeter zones in Building C activating baseboard heaters despite outdoor temperature of 88\u00b0F. Occupants complaining of excessive heat near windows. BEMS shows baseboard heating valve open at 40%. Zone thermostat calling for cooling, not heating.",
+    "resolution": "Zone controller sequence of operations had a logic error in the deadband calculation. When cooling setpoint (74\u00b0F) minus deadband (6\u00b0F) yielded 68\u00b0F, and the zone temp briefly dipped to 68\u00b0F due to overcooling from the VAV, the baseboard heating loop activated. Reduced deadband from 6\u00b0F to 3\u00b0F and added an outdoor air temperature lockout (disable baseboards when OAT > 65\u00b0F). Issue resolved across all 14 perimeter zones using the same template.",
     "severity": "P3",
     "component": "Perimeter Heating - Logic",
     "date": "2025-07-08",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Reviewed zone controller deadband logic",
+      "Reduced deadband from 6\u00b0F to 3\u00b0F",
+      "Added OAT lockout (disable baseboards when OAT > 65\u00b0F)",
+      "Applied template to all 14 perimeter zones",
+      "Verified no summer baseboard activation"
+    ],
+    "documents_used": [
+      "Perimeter Heating Control Sequence",
+      "Zone Controller Programming Guide"
+    ],
+    "commands_used": [
+      "bacnet write AV:deadband 3",
+      "bacnet write AV:oat-lockout 65"
+    ]
   },
   {
     "ticket_id": "BEMS-1038",
     "source": "Webex Conversation",
     "title": "Coordinating BEMS upgrade from legacy Niagara N4 to current version",
     "description": "Team planning discussion on upgrading Building A BEMS from Niagara Framework N4.6 to N4.13. System has 4,200 points across 38 JACE controllers. Concerned about driver compatibility, schedule preservation, and graphic migration. Upgrade window is the holiday shutdown period.",
-    "resolution": "Developed phased upgrade plan: (1) Back up all JACE station databases and graphics. (2) Upgrade supervisor workstation first and verify driver compatibility matrix. (3) Upgrade JACEs in groups of 5 during off-hours with rollback capability. (4) Found 3 legacy Lon drivers needed updated versions — obtained from Tridium partner. (5) Graphics required minor CSS adjustments for new HTML5 rendering engine. Full upgrade completed in 4 days during holiday week. All 4,200 points verified operational. New features: improved trending, enhanced cybersecurity modules, and mobile-responsive graphics.",
+    "resolution": "Developed phased upgrade plan: (1) Back up all JACE station databases and graphics. (2) Upgrade supervisor workstation first and verify driver compatibility matrix. (3) Upgrade JACEs in groups of 5 during off-hours with rollback capability. (4) Found 3 legacy Lon drivers needed updated versions \u2014 obtained from Tridium partner. (5) Graphics required minor CSS adjustments for new HTML5 rendering engine. Full upgrade completed in 4 days during holiday week. All 4,200 points verified operational. New features: improved trending, enhanced cybersecurity modules, and mobile-responsive graphics.",
     "severity": "P3",
     "component": "BEMS - Platform Upgrade",
     "date": "2025-12-15",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Backed up JACE databases and graphics",
+      "Upgraded supervisor, verified driver matrix",
+      "Upgraded JACEs in groups of 5",
+      "Obtained updated Lon drivers from Tridium",
+      "Adjusted graphics CSS for HTML5"
+    ],
+    "documents_used": [
+      "Niagara N4.13 Upgrade Guide",
+      "Tridium Driver Compatibility Matrix"
+    ],
+    "commands_used": [
+      "niagara backup-station",
+      "niagara upgrade-jace 4.13"
+    ]
   },
   {
     "ticket_id": "BEMS-1039",
@@ -426,40 +990,100 @@
     "severity": "P3",
     "component": "AHU - Humidifier",
     "date": "2025-09-12",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Identified ultrasonic humidifier mineral aerosolization",
+      "Replaced with evaporative steam humidifier",
+      "Connected humidifier drain to condensate line",
+      "Cleaned ductwork and diffusers",
+      "Added water softener upstream"
+    ],
+    "documents_used": [
+      "Humidifier Selection Guide",
+      "Water Hardness Treatment Options"
+    ],
+    "commands_used": [
+      "bacnet read AV:humidity present-value",
+      "bacnet read AV:water-hardness present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1040",
     "source": "BEMS Ticket",
     "title": "Rooftop unit compressor short cycling on low suction pressure",
-    "description": "RTU-4 compressor cycling every 4-5 minutes on low suction pressure cutout. BEMS shows suction pressure dropping to 45 psig (cutout is 50 psig for R-410A). Evaporator coil appears to be frosting despite airflow being normal. Superheat is running at 25°F (target 10-12°F).",
-    "resolution": "Thermostatic expansion valve (TXV) sensing bulb had lost its charge due to a micro-crack in the capillary tube. TXV was not opening sufficiently, starving the evaporator of refrigerant and causing low suction pressure and high superheat. Replaced TXV assembly including sensing bulb and capillary. After replacement: suction pressure stable at 118 psig, superheat at 11°F, no more short cycling.",
+    "description": "RTU-4 compressor cycling every 4-5 minutes on low suction pressure cutout. BEMS shows suction pressure dropping to 45 psig (cutout is 50 psig for R-410A). Evaporator coil appears to be frosting despite airflow being normal. Superheat is running at 25\u00b0F (target 10-12\u00b0F).",
+    "resolution": "Thermostatic expansion valve (TXV) sensing bulb had lost its charge due to a micro-crack in the capillary tube. TXV was not opening sufficiently, starving the evaporator of refrigerant and causing low suction pressure and high superheat. Replaced TXV assembly including sensing bulb and capillary. After replacement: suction pressure stable at 118 psig, superheat at 11\u00b0F, no more short cycling.",
     "severity": "P2",
     "component": "RTU - Refrigeration",
     "date": "2025-11-02",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Measured suction pressure (45 psig) and superheat (25\u00b0F)",
+      "Identified TXV sensing bulb capillary crack",
+      "Replaced TXV assembly with sensing bulb",
+      "Verified suction 118 psig, superheat 11\u00b0F",
+      "Confirmed no short cycling"
+    ],
+    "documents_used": [
+      "R-410A TXV Sizing and Replacement",
+      "Superheat/Subcooling Troubleshooting"
+    ],
+    "commands_used": [
+      "refrigerant gauge read suction",
+      "refrigerant gauge read superheat"
+    ]
   },
   {
     "ticket_id": "BEMS-1041",
     "source": "Service Request",
     "title": "Configure automated fault detection and diagnostics for central plant",
-    "description": "Engineering team requesting AFDD rules for the central chiller/boiler plant to proactively identify equipment degradation, inefficiencies, and impending failures. Want automated daily reports and real-time critical alerts. Current approach is reactive — issues only found when tenants complain.",
+    "description": "Engineering team requesting AFDD rules for the central chiller/boiler plant to proactively identify equipment degradation, inefficiencies, and impending failures. Want automated daily reports and real-time critical alerts. Current approach is reactive \u2014 issues only found when tenants complain.",
     "resolution": "Implemented 35 AFDD rules covering: chiller COP degradation (>15% from baseline), condenser approach temperature rise, evaporator fouling index, pump differential pressure anomalies, VFD fault frequency tracking, simultaneous heating and cooling detection, HW/CHW reset effectiveness, stuck valve detection (command vs position mismatch >5min), and sensor drift correlation. Rules run every 15 minutes against live data. Daily summary email to plant engineer. Critical faults (potential equipment damage) trigger immediate SMS alert. Dashboard shows fault history and trending. Identified 3 latent issues in first week of operation.",
     "severity": "P4",
     "component": "BEMS - AFDD",
     "date": "2025-08-20",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Defined 35 AFDD rules for plant equipment",
+      "Configured 15-minute rule execution",
+      "Set up daily summary email",
+      "Configured critical fault SMS alerts",
+      "Verified 3 latent issues in first week"
+    ],
+    "documents_used": [
+      "ASHRAE Guideline 36 AFDD",
+      "Chiller COP Baseline Documentation"
+    ],
+    "commands_used": [
+      "afdd run-rules",
+      "afdd get-fault-history"
+    ]
   },
   {
     "ticket_id": "BEMS-1042",
     "source": "Webex Conversation",
     "title": "Investigating thermal comfort complaints in open plan office despite BEMS showing setpoint met",
-    "description": "Repeated thermal comfort complaints from east wing open plan office. BEMS shows zone temperature at 72°F setpoint. However, occupants near windows report feeling cold in winter and hot in summer. Perimeter vs interior temperature differential suspected. Single zone sensor located in interior ceiling plenum.",
-    "resolution": "Installed 4 supplementary wireless temperature sensors at desk level (3 feet) in the complaint zones — 2 perimeter, 2 interior. Data showed perimeter temps were 66°F in winter and 78°F in summer while the interior ceiling sensor read 72°F. Repositioned the primary zone sensor to a representative location between perimeter and interior at desk height. Added a second perimeter zone with independent VAV control. Installed low-E solar film on east-facing windows to reduce radiant heat gain/loss. Complaints dropped to zero after modifications.",
+    "description": "Repeated thermal comfort complaints from east wing open plan office. BEMS shows zone temperature at 72\u00b0F setpoint. However, occupants near windows report feeling cold in winter and hot in summer. Perimeter vs interior temperature differential suspected. Single zone sensor located in interior ceiling plenum.",
+    "resolution": "Installed 4 supplementary wireless temperature sensors at desk level (3 feet) in the complaint zones \u2014 2 perimeter, 2 interior. Data showed perimeter temps were 66\u00b0F in winter and 78\u00b0F in summer while the interior ceiling sensor read 72\u00b0F. Repositioned the primary zone sensor to a representative location between perimeter and interior at desk height. Added a second perimeter zone with independent VAV control. Installed low-E solar film on east-facing windows to reduce radiant heat gain/loss. Complaints dropped to zero after modifications.",
     "severity": "P3",
     "component": "HVAC - Thermal Comfort",
     "date": "2026-02-18",
-    "engineer": "mwilliams"
+    "engineer": "mwilliams",
+    "resolution_steps": [
+      "Installed 4 wireless sensors at desk level",
+      "Collected perimeter vs interior temp data",
+      "Repositioned primary sensor to representative location",
+      "Added second perimeter zone with VAV control",
+      "Installed low-E film on east windows"
+    ],
+    "documents_used": [
+      "ASHRAE 55 Thermal Comfort",
+      "VAV Zone Sensor Placement Guide"
+    ],
+    "commands_used": [
+      "bacnet read AV:zone-temp present-value",
+      "bacnet read AV:perimeter-temp present-value"
+    ]
   },
   {
     "ticket_id": "BEMS-1043",
@@ -470,28 +1094,73 @@
     "severity": "P3",
     "component": "Pressurization - Controls",
     "date": "2026-01-05",
-    "engineer": "agarcia"
+    "engineer": "agarcia",
+    "resolution_steps": [
+      "Identified missing DP sensor from renovation",
+      "Installed new DP sensor across lobby door",
+      "Recalibrated PI loop for 0.03 in.w.c.",
+      "Verified fan modulation 20\u201360%",
+      "Added sensor health monitoring alarm"
+    ],
+    "documents_used": [
+      "Elevator Lobby Pressurization Code",
+      "Stack Effect Compensation Guide"
+    ],
+    "commands_used": [
+      "bacnet read AV:lobby-dp present-value",
+      "bacnet write AV:pressurization-sp 0.03"
+    ]
   },
   {
     "ticket_id": "BEMS-1044",
     "source": "BEMS Ticket",
     "title": "Condensate drain pan overflow flooding ceiling tiles below AHU-7",
     "description": "Water-stained ceiling tiles discovered below AHU-7 mechanical room. Condensate drain pan overflowing during high humidity days. BEMS shows no condensate pan high-level alarm despite water visibly overflowing. Drain line appears connected and not visibly blocked at the unit.",
-    "resolution": "Condensate drain line had developed an algae plug approximately 15 feet downstream inside the wall chase. Water backed up and overflowed the primary pan. Secondary (emergency) drain pan float switch was stuck in the down position due to mineral deposits — which is why no alarm was generated. Cleared drain line with compressed nitrogen, treated with algaecide tablets. Cleaned and freed secondary pan float switch. Added condensate pan water detection sensor wired directly to BEMS (bypassing the unreliable float switch). Installed clear P-trap for visual inspection.",
+    "resolution": "Condensate drain line had developed an algae plug approximately 15 feet downstream inside the wall chase. Water backed up and overflowed the primary pan. Secondary (emergency) drain pan float switch was stuck in the down position due to mineral deposits \u2014 which is why no alarm was generated. Cleared drain line with compressed nitrogen, treated with algaecide tablets. Cleaned and freed secondary pan float switch. Added condensate pan water detection sensor wired directly to BEMS (bypassing the unreliable float switch). Installed clear P-trap for visual inspection.",
     "severity": "P2",
     "component": "AHU - Condensate",
     "date": "2025-08-15",
-    "engineer": "bchen"
+    "engineer": "bchen",
+    "resolution_steps": [
+      "Traced drain line \u2014 found algae plug 15 ft downstream",
+      "Cleared line with compressed nitrogen",
+      "Treated with algaecide tablets",
+      "Cleaned and freed secondary pan float switch",
+      "Installed BEMS water detection sensor, clear P-trap"
+    ],
+    "documents_used": [
+      "Condensate Drain Maintenance",
+      "Secondary Pan Float Switch Spec"
+    ],
+    "commands_used": [
+      "bacnet read BV:condensate-alarm present-value",
+      "nitrogen blow 15ft"
+    ]
   },
   {
     "ticket_id": "BEMS-1045",
     "source": "Service Request",
     "title": "Implement nighttime building flush sequence for improved morning IAQ",
     "description": "Green building consultant recommending a pre-occupancy flush cycle to purge stale air and VOCs that accumulate overnight. Building has tight envelope with low infiltration. Morning CO2 readings are 800-900 ppm at occupancy start. Target is below 600 ppm when occupants arrive.",
-    "resolution": "Programmed a 90-minute pre-occupancy flush sequence starting 1.5 hours before scheduled occupancy. AHUs operate at 100% outdoor air with maximum fan speed during flush. Added OAT lockout — flush disabled when OAT is below 32°F or above 90°F to prevent energy waste and freeze risk. Economizer dampers go to maximum OA position during flush, then return to normal DCV control at occupancy. CO2 readings at occupancy start now average 450 ppm. Estimated IAQ improvement supports LEED IEQ credits. Energy impact is minimal due to mild early morning temperatures during most of the year.",
+    "resolution": "Programmed a 90-minute pre-occupancy flush sequence starting 1.5 hours before scheduled occupancy. AHUs operate at 100% outdoor air with maximum fan speed during flush. Added OAT lockout \u2014 flush disabled when OAT is below 32\u00b0F or above 90\u00b0F to prevent energy waste and freeze risk. Economizer dampers go to maximum OA position during flush, then return to normal DCV control at occupancy. CO2 readings at occupancy start now average 450 ppm. Estimated IAQ improvement supports LEED IEQ credits. Energy impact is minimal due to mild early morning temperatures during most of the year.",
     "severity": "P4",
     "component": "IAQ - Flush Sequence",
     "date": "2025-10-25",
-    "engineer": "jsmith"
+    "engineer": "jsmith",
+    "resolution_steps": [
+      "Programmed 90-minute pre-occupancy flush",
+      "Set AHU 100% OA, max fan during flush",
+      "Added OAT lockout (32\u00b0F\u201390\u00b0F)",
+      "Configured economizer max OA during flush",
+      "Verified CO2 at occupancy start ~450 ppm"
+    ],
+    "documents_used": [
+      "LEED IEQ Flush Sequence",
+      "ASHRAE 62.1 Pre-Occupancy Purge"
+    ],
+    "commands_used": [
+      "bacnet write AV:flush-duration 90",
+      "bacnet write AV:oat-lockout-low 32"
+    ]
   }
 ]

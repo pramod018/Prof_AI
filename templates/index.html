@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cisco BEMS Troubleshooting Assistant</title>
+  <title>Prof-AI for BEMS — Troubleshooting Assistant</title>
   <link rel="stylesheet" href="/static/css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,7 +27,7 @@
               <rect x="21" y="6" width="2" height="6" rx="1" fill="#fff"/>
             </g>
           </svg>
-          <h1>Cisco <span>BEMS</span></h1>
+          <h1>Prof-AI <span>for BEMS</span></h1>
         </div>
         <p class="subtitle">Troubleshooting Assistant</p>
       </div>
@@ -44,14 +44,53 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Ingest Data
         </button>
-        <!-- Fine-Tune Tab (DISABLED) — Uncomment to enable -->
-        <!--
+        <button class="nav-btn" data-tab="sync">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Ticket Sync
+        </button>
+        <button class="nav-btn" data-tab="rca">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Root Cause Analyser
+        </button>
+        <button class="nav-btn" data-tab="jira">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Raise Jira Ticket
+        </button>
         <button class="nav-btn" data-tab="finetune">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           Fine-Tune Model
         </button>
-        -->
       </nav>
+      <div class="sidebar-playbook" id="sidebarPlaybook">
+        <div class="playbook-header">
+          <h3>Resolution Playbook</h3>
+          <button class="playbook-close" id="playbookClose" title="Close">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="playbook-ticket-id" id="playbookTicketId"></div>
+        <div class="playbook-section">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Steps
+          </h4>
+          <ol id="playbookSteps" class="playbook-list"></ol>
+        </div>
+        <div class="playbook-section">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+            Documents
+          </h4>
+          <ul id="playbookDocs" class="playbook-list"></ul>
+        </div>
+        <div class="playbook-section">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Commands
+          </h4>
+          <div id="playbookCommands" class="playbook-commands"></div>
+        </div>
+      </div>
       <div class="sidebar-footer">
         <div class="status-indicator" id="statusIndicator">
           <span class="status-dot"></span>
@@ -164,8 +203,216 @@
         </div>
       </section>
 
-      <!-- Fine-Tune Model Tab (DISABLED) — Uncomment to enable -->
-      <!--
+      <!-- Ticket Sync Tab -->
+      <section class="tab-panel" id="tab-sync">
+        <div class="panel-header">
+          <h2>Real-Time Ticket Sync</h2>
+          <p>Sync new tickets into the knowledge base from JSON or CSV sources. Duplicate tickets are automatically detected and skipped. Supports bulk upload and single-ticket webhook ingestion.</p>
+        </div>
+
+        <div class="sync-toggle-row">
+          <button class="sync-toggle active" data-sync="json">JSON Upload</button>
+          <button class="sync-toggle" data-sync="csv">CSV Upload</button>
+        </div>
+
+        <div id="syncJsonPanel" class="sync-panel active">
+          <form id="syncJsonForm" class="query-form">
+            <div class="form-group">
+              <label for="syncJsonInput">Paste JSON Array of Tickets</label>
+              <textarea
+                id="syncJsonInput"
+                rows="8"
+                placeholder='[
+  {
+    "ticket_id": "BEMS-100",
+    "source": "BEMS Ticket",
+    "title": "AHU fan failure",
+    "description": "AHU-5 supply fan not starting...",
+    "resolution": "Replaced VFD drive board...",
+    "severity": "P2",
+    "component": "AHU - Fan",
+    "date": "2026-02-27",
+    "engineer": "John Smith"
+  }
+]'
+                required
+                minlength="10"
+              ></textarea>
+            </div>
+            <button type="submit" class="btn-primary" id="syncJsonBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>
+              Sync JSON Tickets
+            </button>
+          </form>
+        </div>
+
+        <div id="syncCsvPanel" class="sync-panel">
+          <form id="syncCsvForm" class="query-form">
+            <div class="form-group">
+              <label for="syncCsvInput">Paste CSV Content (with headers)</label>
+              <textarea
+                id="syncCsvInput"
+                rows="8"
+                placeholder="ticket_id,source,title,description,resolution,severity,component,date,engineer
+BEMS-100,BEMS Ticket,AHU fan failure,AHU-5 supply fan not starting...,Replaced VFD drive board...,P2,AHU - Fan,2026-02-27,John Smith"
+                required
+                minlength="10"
+              ></textarea>
+            </div>
+            <button type="submit" class="btn-primary" id="syncCsvBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg>
+              Sync CSV Tickets
+            </button>
+          </form>
+        </div>
+
+        <div id="syncResults" class="results-container hidden">
+          <div id="syncStatus" class="summary-card"></div>
+        </div>
+
+        <div class="results-section" style="margin-top:28px;">
+          <h3>Sync History</h3>
+          <div id="syncHistory" class="sync-history-list">
+            <p class="empty-state">No sync activity yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Root Cause Analyser Tab -->
+      <section class="tab-panel" id="tab-rca">
+        <div class="panel-header">
+          <h2>Root Cause Analyser</h2>
+          <p>Perform deep root-cause analysis on BEMS issues. The analyser retrieves historical tickets, identifies failure patterns, and uses AI to determine probable root causes, contributing factors, and corrective actions.</p>
+        </div>
+        <form id="rcaForm" class="query-form">
+          <div class="form-group">
+            <label for="rcaSymptom">Symptom / Problem Description</label>
+            <textarea
+              id="rcaSymptom"
+              placeholder="Describe the symptoms in detail, e.g.: Multiple AHUs on floors 3-5 showing simultaneous supply air temperature alarms. Chilled water delta-T across the building dropped from 12°F to 4°F over the past 2 hours. Cooling demand is at 100% but zones are not reaching setpoint..."
+              rows="5"
+              required
+              minlength="10"
+              maxlength="5000"
+            ></textarea>
+            <div class="char-count"><span id="rcaCharCount">0</span> / 5000</div>
+          </div>
+          <div class="form-row">
+            <div class="form-group small">
+              <label for="rcaTopK">Evidence tickets to analyse</label>
+              <select id="rcaTopK">
+                <option value="5">5 tickets</option>
+                <option value="10" selected>10 tickets</option>
+                <option value="15">15 tickets</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" id="rcaBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Run Root Cause Analysis
+            </button>
+          </div>
+        </form>
+
+        <div id="rcaResults" class="results-container hidden">
+          <!-- Pattern Stats -->
+          <div class="rca-stats-row" id="rcaStatsRow"></div>
+
+          <!-- RCA Report -->
+          <div class="results-section">
+            <h3>Root Cause Analysis Report</h3>
+            <div id="rcaReport" class="summary-card rca-report"></div>
+          </div>
+
+          <!-- Email Template -->
+          <div class="results-section">
+            <div class="email-template-header">
+              <h3>Email Template</h3>
+              <button class="btn-copy" id="copyEmailBtn" title="Copy to clipboard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="copyEmailText">Copy to Clipboard</span>
+              </button>
+            </div>
+            <pre id="rcaEmailTemplate" class="email-template-block"></pre>
+          </div>
+
+          <!-- Evidence Tickets -->
+          <div class="results-section">
+            <h3>Evidence Tickets</h3>
+            <div id="rcaTicketsList" class="tickets-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Raise Jira Ticket Tab -->
+      <section class="tab-panel" id="tab-jira">
+        <div class="panel-header">
+          <h2>Raise Jira Ticket</h2>
+          <p>Describe the BEMS issue and the AI will analyse the sentiment/impact to auto-classify the Jira severity (1-Critical, 2-High, 3-Medium, 4-Low) and generate a complete ticket ready for submission.</p>
+        </div>
+        <form id="jiraForm" class="query-form">
+          <div class="form-group">
+            <label for="jiraIssue">Issue Description</label>
+            <textarea
+              id="jiraIssue"
+              placeholder="Describe the issue, e.g.: Building-wide chiller plant has failed, all cooling lost across 12 floors. Occupant complaints flooding in. BMS shows all three chillers in fault lockout with high-pressure alarms..."
+              rows="5"
+              required
+              minlength="10"
+              maxlength="5000"
+            ></textarea>
+            <div class="char-count"><span id="jiraCharCount">0</span> / 5000</div>
+          </div>
+          <div class="form-group">
+            <label for="jiraRcaContext">RCA Context (optional — paste RCA report for better classification)</label>
+            <textarea
+              id="jiraRcaContext"
+              placeholder="Paste the root cause analysis report here if available..."
+              rows="3"
+            ></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group small">
+              <label for="jiraOverrideSev">Override Severity (optional)</label>
+              <select id="jiraOverrideSev">
+                <option value="" selected>Auto-detect</option>
+                <option value="1">1 — Critical</option>
+                <option value="2">2 — High</option>
+                <option value="3">3 — Medium</option>
+                <option value="4">4 — Low</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" id="jiraBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              Generate Jira Ticket
+            </button>
+          </div>
+        </form>
+
+        <div id="jiraResults" class="results-container hidden">
+          <!-- Severity Badge -->
+          <div class="jira-severity-banner" id="jiraSeverityBanner"></div>
+
+          <!-- Ticket Preview -->
+          <div class="results-section">
+            <h3>Ticket Preview</h3>
+            <div class="jira-preview-card" id="jiraPreview"></div>
+          </div>
+
+          <!-- Copy-ready Jira text -->
+          <div class="results-section">
+            <div class="email-template-header">
+              <h3>Jira Ticket (Copy-Ready)</h3>
+              <button class="btn-copy" id="copyJiraBtn" title="Copy to clipboard">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="copyJiraText">Copy to Clipboard</span>
+              </button>
+            </div>
+            <pre id="jiraTicketText" class="email-template-block"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fine-Tune Model Tab -->
       <section class="tab-panel" id="tab-finetune">
         <div class="panel-header">
           <h2>Fine-Tune Embedding Model</h2>
@@ -208,7 +455,6 @@
           <div id="finetuneStatus" class="summary-card"></div>
         </div>
       </section>
-      -->
 
       <!-- Loading Overlay -->
       <div id="loadingOverlay" class="loading-overlay hidden">
